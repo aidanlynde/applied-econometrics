@@ -1,0 +1,74 @@
+---
+title: "PS1_ECON_471"
+author: "kareem2, alynde2, luigi2"
+date: "2023-02-02"
+output:
+  pdf_document:
+  extra_dependencies: 'amsmath'
+  keep_tex: yes
+---
+
+### 2.3 Writing Funcitons to Calculate Conditional Distributions
+
+```{r echo = TRUE, results='asis'}
+library(data.table)
+library(knitr)
+#1
+N = 100
+#2
+unif.draws = runif(N, 0, 1)
+#3
+data = data.table(unif.draws)
+#4
+data[unif.draws < .09, education := "Less than high school"]
+data[unif.draws >= .09 & unif.draws < .37, education := "High school"]
+data[unif.draws >= .37 & unif.draws < .62, education := "Some college"]
+data[unif.draws >= .62 & unif.draws < .86, education := "College"]
+data[unif.draws >= .86, education := "More than college"]
+```
+
+##### 5
+
+unif.draws is analogous to an event or outcome in $\Omega$, and education is analogous to a variable which measures the event.
+
+##### 6
+
+The distribution of education is as follows \$
+
+\
+\$
+
+             \begin{cases} 
+              0.09 & education = \text{Less than high school} \\
+              0.28 & education = \text{High school} \\
+              0.25 & education = \text{Some college} \\
+              0.24 & education = \text{College} \\
+              0.14 & education = \text{More than college}
+             \end{cases}
+        $
+
+
+```{r}
+#7
+data[education == "Less than high school", base.wages := 15.48]
+data[education == "High school", base.wages := 19.53]
+data[education == "Some college", base.wages := 22.50]
+data[education == "College", base.wages := 32.63]
+data[education == "More than college", base.wages := 41.25]
+
+#8
+data[, skill := rnorm(100, 0, 1)]
+
+#9
+data[, wage := base.wages + 5 * skill]
+
+#10
+mean(data$wage)
+var(data$wage)
+
+#11
+mean(data$wage[data$education == "College"])
+var(data$wage[data$education == "College"])
+```
+
+We can see here that the mean wage is higher given education = College
