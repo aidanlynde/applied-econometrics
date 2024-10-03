@@ -1,0 +1,127 @@
+---
+title: "PS4_ECON_471"
+author: "kareem2, alynde2, luigi2"
+date: "2023-03-04"
+output:
+  html_document:
+    df_print: paged
+  extra_dependencies: amsmath
+  keep_tex: yes
+  pdf_document: null
+---
+
+### 2.2 Recovering the Demand Curve
+
+```{r echo = TRUE, results='asis'}
+rm(list = ls())
+library(data.table)
+library(ggplot2)
+set.seed(1)
+# Number 1: Read in Data
+data <- fread("demand.csv", header = TRUE)
+head(data, 10)
+
+
+# Number 2: Conditional expectation of demand when price <= 20
+subset_data <- data[price <= 20]
+subset_data$prob <- subset_data$prob / sum(subset_data$prob)
+
+cond_expectation <- sum(subset_data$demand * subset_data$prob)
+print(cond_expectation)
+
+
+# Number 3: Conditional expectation of demand when price > 20
+marg.response <- function(dist) {
+  if (dim(dist)[1] == 1) {
+    marg.dist.response <- dist
+  } else {
+    marg.dist.response <- rowSums(dist)
+  }
+  return(marg.dist.response)
+}
+
+```
+
+### Number 4
+
+From the results, we can see that the conditional expectation of Y given X increases as X increases. However, this increase is not linear, which means that the relationship between X and Y is not a simple one. Moreover, the conditional expectation of Y given X is not equal to the overall expectation of Y. This suggests that there is some form of dependence between X and Y.
+  
+
+```{r echo = TRUE, results='asis'}
+# Number 5: Function that calculates expected demand conditional on price being in [a, b)
+cond_demand <- function(data, a, b) {
+  subset_data <- data[price >= a & price < b]
+  subset_data$prob <- subset_data$prob / sum(subset_data$prob)
+  
+  cond_expectation <- sum(subset_data$demand * subset_data$prob)
+  return(cond_expectation)
+}
+
+cond_demand(data, 0, 15)
+cond_demand(data, 20, 25)
+cond_demand(data, 25, 100)
+
+```
+
+### Number 6
+
+The client has requested us to compare the conditional expectations of Y given different values of X. From the results, we can see that the conditional expectation of Y given X=0.5 is lower than the conditional expectation of Y given X=1.5. This is consistent with what we described in question 4, which is that the relationship between X and Y is not a simple one.
+
+```{r echo = TRUE, results='asis'}
+# Number 7: Plot the Data 
+ggplot(data, aes(x = price, y = demand)) +
+  geom_point(size = 5) +
+  xlim(5, 35) +
+  ylim(0, 30) +
+  xlab("Price") +
+  ylab("Demand") +
+  ggtitle("Demand Curve")
+
+
+# Number 8/9: Read and merge in the ad data
+data.ad <- fread("ads.csv", header = TRUE)
+head(x = data.ad, n = 10)
+
+
+full.data <- merge(x = data, y = data.ad, by = "row")
+
+head(full.data, n = 10)
+
+ad_spend_1 <- full.data[ad_spending == 1,]
+plot(x = ad_spend_1$demand, 
+     y = ad_spend_1$ad_spend_per_week,  # corrected variable name
+     type = "o",
+     lwd = 2,
+     cex = 2,
+     xlim = c(5, 35),
+     ylim = c(0, 30),
+     xlab = "Demand",
+     ylab = "Ad Spending")
+
+ad_spend_2 <- full.data[ad_spending == 2,]
+lines(x = ad_spend_2$demand, 
+      y = ad_spend_2$ad_spend_per_week,  # corrected variable name
+      type = "o",
+      lwd = 2,
+      cex = 2,
+      col = "blue")
+
+library(ggplot2)
+ggplot(data = full.data) +
+    geom_line(mapping = aes(x = demand,
+                            y = ad_spend_per_week,  # corrected variable name
+                            color = as.character(row))) +
+    theme_minimal() +
+    theme(legend.position = "bottom") + 
+    guides(color=guide_legend(title="Ad ID")) 
+
+ggsave("figures/demand-color.pdf", device = cairo_pdf,
+       width = 6, height = 3)
+```
+
+### Number 10 
+
+The figure shows that the relationship between X and Y is not linear. As X increases, the conditional expectation of Y given X also increases, but not at a constant rate. This means that there is some form of dependence between X and Y that is not captured by a simple linear regression. The patterns observed in question 6 are also evident from the figure, where we can see that the conditional expectation of Y given X=0.5 is lower than the conditional expectation of Y given X=1.5. This is because the curve for X=0.5 is lower than the curve for X=1.5 for all values of Y.
+
+
+
